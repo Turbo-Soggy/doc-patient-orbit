@@ -8,6 +8,9 @@ import AIAssistantModal from "@/components/modals/AIAssistantModal";
 import ScheduleAppointmentModal from "@/components/modals/ScheduleAppointmentModal";
 import PatientListModal from "@/components/modals/PatientListModal";
 import PendingRequestsModal from "@/components/modals/PendingRequestsModal";
+import AppointmentsCalendarModal from "@/components/modals/AppointmentsCalendarModal";
+import PatientsTodayModal from "@/components/modals/PatientsTodayModal";
+import TelehealthSessionsModal from "@/components/modals/TelehealthSessionsModal";
 import { useToast } from "@/hooks/use-toast";
 
 const Doctor = () => {
@@ -20,6 +23,9 @@ const Doctor = () => {
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [patientListOpen, setPatientListOpen] = useState(false);
   const [pendingRequestsOpen, setPendingRequestsOpen] = useState(false);
+  const [appointmentsCalendarOpen, setAppointmentsCalendarOpen] = useState(false);
+  const [patientsTodayOpen, setPatientsTodayOpen] = useState(false);
+  const [telehealthSessionsOpen, setTelehealthSessionsOpen] = useState(false);
   const { toast } = useToast();
 
   const handleViewHistory = (patientName: string) => {
@@ -55,19 +61,28 @@ const Doctor = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Stats Overview */}
         <div className="grid md:grid-cols-4 gap-4 mb-8">
-          <Card className="p-6 border-primary/30">
+          <Card 
+            className="p-6 border-primary/30 cursor-pointer hover:shadow-lg transition-all"
+            onClick={() => setPatientsTodayOpen(true)}
+          >
             <Users className="w-8 h-8 text-primary mb-2" />
             <div className="text-2xl font-bold">24</div>
             <p className="text-sm text-muted-foreground">Patients Today</p>
           </Card>
           
-          <Card className="p-6 border-secondary/30">
+          <Card 
+            className="p-6 border-secondary/30 cursor-pointer hover:shadow-lg transition-all"
+            onClick={() => setAppointmentsCalendarOpen(true)}
+          >
             <Calendar className="w-8 h-8 text-secondary mb-2" />
             <div className="text-2xl font-bold">8</div>
             <p className="text-sm text-muted-foreground">Appointments</p>
           </Card>
           
-          <Card className="p-6 border-accent/30">
+          <Card 
+            className="p-6 border-accent/30 cursor-pointer hover:shadow-lg transition-all"
+            onClick={() => setTelehealthSessionsOpen(true)}
+          >
             <Video className="w-8 h-8 text-accent mb-2" />
             <div className="text-2xl font-bold">3</div>
             <p className="text-sm text-muted-foreground">Telehealth</p>
@@ -285,6 +300,22 @@ const Doctor = () => {
       <PendingRequestsModal
         open={pendingRequestsOpen}
         onOpenChange={setPendingRequestsOpen}
+      />
+      <AppointmentsCalendarModal
+        open={appointmentsCalendarOpen}
+        onOpenChange={setAppointmentsCalendarOpen}
+      />
+      <PatientsTodayModal
+        open={patientsTodayOpen}
+        onOpenChange={setPatientsTodayOpen}
+        onViewHistory={(patientName) => {
+          setSelectedPatient(patientName);
+          setHistoryOpen(true);
+        }}
+      />
+      <TelehealthSessionsModal
+        open={telehealthSessionsOpen}
+        onOpenChange={setTelehealthSessionsOpen}
       />
     </div>
   );
