@@ -13,7 +13,17 @@ const Patient = () => {
   const [bookAppointmentOpen, setBookAppointmentOpen] = useState(false);
   const [medicalHistoryOpen, setMedicalHistoryOpen] = useState(false);
   const [telehealthOpen, setTelehealthOpen] = useState(false);
+  const [preSelectedDoctor, setPreSelectedDoctor] = useState<{ id: string; name: string } | null>(null);
   const { toast } = useToast();
+
+  const handleBookFromSymptomCheck = (doctorId: string, doctorName: string) => {
+    setPreSelectedDoctor({ id: doctorId, name: doctorName });
+    setBookAppointmentOpen(true);
+    toast({
+      title: "Ready to Book",
+      description: `Opening appointment booking with ${doctorName}`,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -192,8 +202,17 @@ const Patient = () => {
         </div>
       </div>
 
-      <SymptomCheckModal open={symptomCheckOpen} onOpenChange={setSymptomCheckOpen} />
-      <BookAppointmentModal open={bookAppointmentOpen} onOpenChange={setBookAppointmentOpen} />
+      <SymptomCheckModal 
+        open={symptomCheckOpen} 
+        onOpenChange={setSymptomCheckOpen}
+        onBookAppointment={handleBookFromSymptomCheck}
+      />
+      <BookAppointmentModal 
+        open={bookAppointmentOpen} 
+        onOpenChange={setBookAppointmentOpen}
+        preSelectedDoctor={preSelectedDoctor?.id}
+        preSelectedDoctorName={preSelectedDoctor?.name}
+      />
       <MedicalHistoryModal open={medicalHistoryOpen} onOpenChange={setMedicalHistoryOpen} />
       <TelehealthModal open={telehealthOpen} onOpenChange={setTelehealthOpen} />
     </div>

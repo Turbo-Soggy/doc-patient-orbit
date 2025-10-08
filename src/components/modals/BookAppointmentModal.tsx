@@ -1,16 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Brain } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
 interface BookAppointmentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  preSelectedDoctor?: string;
+  preSelectedDoctorName?: string;
 }
 
 const doctors = [
@@ -23,11 +25,18 @@ const timeSlots = [
   "09:00 AM", "10:00 AM", "11:00 AM", "02:00 PM", "03:00 PM", "04:00 PM"
 ];
 
-const BookAppointmentModal = ({ open, onOpenChange }: BookAppointmentModalProps) => {
-  const [selectedDoctor, setSelectedDoctor] = useState("");
+const BookAppointmentModal = ({ open, onOpenChange, preSelectedDoctor, preSelectedDoctorName }: BookAppointmentModalProps) => {
+  const [selectedDoctor, setSelectedDoctor] = useState(preSelectedDoctor || "");
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState("");
   const { toast } = useToast();
+
+  // Update selected doctor when pre-selected doctor changes
+  useEffect(() => {
+    if (preSelectedDoctor) {
+      setSelectedDoctor(preSelectedDoctor);
+    }
+  }, [preSelectedDoctor]);
 
   const handleBooking = () => {
     if (!selectedDoctor || !selectedDate || !selectedTime) {
@@ -60,11 +69,23 @@ const BookAppointmentModal = ({ open, onOpenChange }: BookAppointmentModalProps)
             Book Appointment
           </DialogTitle>
           <DialogDescription>
-            Schedule your appointment with a healthcare professional.
+            {preSelectedDoctorName 
+              ? `Schedule your appointment with ${preSelectedDoctorName}` 
+              : "Schedule your appointment with a healthcare professional."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
+          {preSelectedDoctorName && (
+            <div className="p-4 bg-accent/10 border border-accent/20 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Brain className="w-4 h-4 text-accent" />
+                <span className="font-semibold text-sm">AI Recommended Specialist</span>
+              </div>
+              <p className="text-sm text-muted-foreground">{preSelectedDoctorName}</p>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label>Select Doctor</Label>
             <Select value={selectedDoctor} onValueChange={setSelectedDoctor}>
@@ -75,6 +96,7 @@ const BookAppointmentModal = ({ open, onOpenChange }: BookAppointmentModalProps)
                 {doctors.map((doctor) => (
                   <SelectItem key={doctor.id} value={doctor.id}>
                     {doctor.name} - {doctor.specialty}
+                    {preSelectedDoctor === doctor.id && " ⭐ (Recommended)"}
                   </SelectItem>
                 ))}
               </SelectContent>

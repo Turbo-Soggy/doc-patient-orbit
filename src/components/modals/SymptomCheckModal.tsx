@@ -9,9 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 interface SymptomCheckModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onBookAppointment: (doctorId: string, doctorName: string) => void;
 }
 
-const SymptomCheckModal = ({ open, onOpenChange }: SymptomCheckModalProps) => {
+const SymptomCheckModal = ({ open, onOpenChange, onBookAppointment }: SymptomCheckModalProps) => {
   const [symptoms, setSymptoms] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -30,6 +31,7 @@ const SymptomCheckModal = ({ open, onOpenChange }: SymptomCheckModalProps) => {
           "Avoid strenuous physical activity until consultation"
         ],
         suggestedSpecialist: "Dr. Sarah Johnson - Cardiology",
+        suggestedDoctorId: "1",
         urgency: "Medium Priority"
       });
       setAnalyzing(false);
@@ -116,7 +118,15 @@ const SymptomCheckModal = ({ open, onOpenChange }: SymptomCheckModalProps) => {
               </div>
 
               <div className="flex gap-2 pt-4">
-                <Button className="flex-1">Book Appointment</Button>
+                <Button 
+                  className="flex-1"
+                  onClick={() => {
+                    onBookAppointment(result.suggestedDoctorId, result.suggestedSpecialist);
+                    handleClose();
+                  }}
+                >
+                  Book Appointment
+                </Button>
                 <Button variant="outline" className="flex-1" onClick={handleClose}>
                   Close
                 </Button>
