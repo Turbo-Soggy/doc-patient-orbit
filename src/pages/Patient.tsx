@@ -7,6 +7,8 @@ import BookAppointmentModal from "@/components/modals/BookAppointmentModal";
 import MedicalHistoryModal from "@/components/modals/MedicalHistoryModal";
 import TelehealthModal from "@/components/modals/TelehealthModal";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Patient = () => {
   const [symptomCheckOpen, setSymptomCheckOpen] = useState(false);
@@ -15,6 +17,13 @@ const Patient = () => {
   const [telehealthOpen, setTelehealthOpen] = useState(false);
   const [preSelectedDoctor, setPreSelectedDoctor] = useState<{ id: string; name: string } | null>(null);
   const { toast } = useToast();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   const handleBookFromSymptomCheck = (doctorId: string, doctorName: string) => {
     setPreSelectedDoctor({ id: doctorId, name: doctorName });
@@ -34,7 +43,9 @@ const Patient = () => {
             <h1 className="text-2xl font-bold">Patient Portal</h1>
             <p className="text-sm text-muted-foreground">Welcome back, Patient</p>
           </div>
-          <Button variant="outline">Sign Out</Button>
+          <Button variant="outline" onClick={handleLogout}>
+            Sign Out
+          </Button>
         </div>
       </header>
 

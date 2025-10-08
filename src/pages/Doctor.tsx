@@ -12,6 +12,8 @@ import AppointmentsCalendarModal from "@/components/modals/AppointmentsCalendarM
 import PatientsTodayModal from "@/components/modals/PatientsTodayModal";
 import TelehealthSessionsModal from "@/components/modals/TelehealthSessionsModal";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Doctor = () => {
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -27,6 +29,13 @@ const Doctor = () => {
   const [patientsTodayOpen, setPatientsTodayOpen] = useState(false);
   const [telehealthSessionsOpen, setTelehealthSessionsOpen] = useState(false);
   const { toast } = useToast();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   const handleViewHistory = (patientName: string) => {
     setSelectedPatient(patientName);
@@ -54,7 +63,9 @@ const Doctor = () => {
             <h1 className="text-2xl font-bold">Doctor Dashboard</h1>
             <p className="text-sm text-muted-foreground">Dr. Sarah Johnson, MD</p>
           </div>
-          <Button variant="outline">Sign Out</Button>
+          <Button variant="outline" onClick={handleLogout}>
+            Sign Out
+          </Button>
         </div>
       </header>
 

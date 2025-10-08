@@ -4,11 +4,20 @@ import { Card } from "@/components/ui/card";
 import { Settings, Users, BarChart3, Database, Shield, Activity } from "lucide-react";
 import EditUserModal from "@/components/modals/EditUserModal";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Admin = () => {
   const [editUserOpen, setEditUserOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const { toast } = useToast();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   const handleEditUser = (user: any) => {
     setSelectedUser(user);
@@ -29,7 +38,9 @@ const Admin = () => {
             <h1 className="text-2xl font-bold">Admin Console</h1>
             <p className="text-sm text-muted-foreground">System Administrator</p>
           </div>
-          <Button variant="outline">Sign Out</Button>
+          <Button variant="outline" onClick={handleLogout}>
+            Sign Out
+          </Button>
         </div>
       </header>
 
