@@ -10,7 +10,7 @@ const roles = [
     description: "Access AI symptom analysis, book appointments, and manage your medical history.",
     features: ["AI Symptom Checker", "Book Appointments", "Medical History", "Telehealth"],
     color: "primary",
-    path: "/patient",
+    path: "/auth",
   },
   {
     icon: Stethoscope,
@@ -18,7 +18,7 @@ const roles = [
     description: "Manage appointments, access AI-powered tools, and sync with Google Calendar.",
     features: ["Smart Scheduling", "AI Note Summary", "Procedure Recommendations", "Calendar Sync"],
     color: "secondary",
-    path: "/doctor",
+    path: "/auth",
   },
   {
     icon: Settings,
@@ -26,7 +26,7 @@ const roles = [
     description: "Oversee system operations, manage users, and access comprehensive analytics.",
     features: ["User Management", "Resource Allocation", "Analytics", "System Config"],
     color: "accent",
-    path: "/admin",
+    path: "/auth",
   },
 ];
 
