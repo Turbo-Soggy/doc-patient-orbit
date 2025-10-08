@@ -7,7 +7,9 @@ const Index = () => {
     <div className="min-h-screen">
       <Hero />
       <Features />
-      <RoleSelector />
+      <div id="role-selector">
+        <RoleSelector />
+      </div>
       
       {/* Footer */}
       <footer className="border-t bg-muted/30 py-12">
