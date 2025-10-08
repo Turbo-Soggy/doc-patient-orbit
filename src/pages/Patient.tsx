@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Brain, Calendar, FileText, Video, Clock, Activity } from "lucide-react";
@@ -7,6 +7,22 @@ import BookAppointmentModal from "@/components/modals/BookAppointmentModal";
 import MedicalHistoryModal from "@/components/modals/MedicalHistoryModal";
 import TelehealthModal from "@/components/modals/TelehealthModal";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+
+interface Appointment {
+  id: string;
+  appointment_date: string;
+  appointment_time: string;
+  type: string;
+  status: string;
+  doctor: {
+    id: string;
+    profiles: {
+      full_name: string | null;
+    } | null;
+  } | null;
+}
 
 const Patient = () => {
   const [symptomCheckOpen, setSymptomCheckOpen] = useState(false);
@@ -14,7 +30,44 @@ const Patient = () => {
   const [medicalHistoryOpen, setMedicalHistoryOpen] = useState(false);
   const [telehealthOpen, setTelehealthOpen] = useState(false);
   const [preSelectedDoctor, setPreSelectedDoctor] = useState<{ id: string; name: string } | null>(null);
+  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  const fetchAppointments = async () => {
+    try {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('appointments')
+        .select(`
+          *,
+          doctor:doctor_id (
+            id,
+            profiles (full_name)
+          )
+        `)
+        .eq('patient_id', user.id)
+        .eq('status', 'approved')
+        .gte('appointment_date', format(new Date(), 'yyyy-MM-dd'))
+        .order('appointment_date', { ascending: true })
+        .order('appointment_time', { ascending: true });
+
+      if (error) throw error;
+      setUpcomingAppointments(data || []);
+    } catch (error) {
+      console.error('Error fetching appointments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
 
   const handleBookFromSymptomCheck = (doctorId: string, doctorName: string) => {
     setPreSelectedDoctor({ id: doctorId, name: doctorName });
@@ -87,29 +140,58 @@ const Patient = () => {
                 <Clock className="w-5 h-5 text-primary" />
                 Upcoming Appointments
               </h2>
-              <div className="space-y-4">
-                <div className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="font-semibold">Dr. Sarah Johnson</h3>
-                      <p className="text-sm text-muted-foreground">General Checkup</p>
-                    </div>
-                    <span className="text-sm bg-primary/10 text-primary px-3 py-1 rounded-full">Today</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">Today at 2:30 PM</p>
+              {loading ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>Loading appointments...</p>
                 </div>
-                
-                <div className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="font-semibold">Dr. Michael Chen</h3>
-                      <p className="text-sm text-muted-foreground">Cardiology Consultation</p>
-                    </div>
-                    <span className="text-sm bg-secondary/10 text-secondary px-3 py-1 rounded-full">Tomorrow</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">Dec 15 at 10:00 AM</p>
+              ) : upcomingAppointments.length > 0 ? (
+                <div className="space-y-4">
+                  {upcomingAppointments.map((appointment) => {
+                    const appointmentDate = new Date(appointment.appointment_date);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    
+                    let dateLabel = format(appointmentDate, 'MMM dd');
+                    if (appointmentDate.toDateString() === today.toDateString()) {
+                      dateLabel = 'Today';
+                    } else if (appointmentDate.toDateString() === tomorrow.toDateString()) {
+                      dateLabel = 'Tomorrow';
+                    }
+
+                    const timeFormatted = format(new Date(`2000-01-01 ${appointment.appointment_time}`), 'h:mm a');
+                    const doctorName = appointment.doctor?.profiles?.full_name || 'Unknown Doctor';
+
+                    return (
+                      <div key={appointment.id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h3 className="font-semibold">{doctorName}</h3>
+                            <p className="text-sm text-muted-foreground">{appointment.type}</p>
+                          </div>
+                          <span className="text-sm bg-primary/10 text-primary px-3 py-1 rounded-full">{dateLabel}</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {format(appointmentDate, 'MMM dd, yyyy')} at {timeFormatted}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>No upcoming appointments.</p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => setBookAppointmentOpen(true)}
+                  >
+                    Book Appointment
+                  </Button>
+                </div>
+              )}
             </Card>
 
             {/* AI Recommendations */}
