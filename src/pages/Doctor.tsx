@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Calendar, Brain, FileText, Video, Users, Clock } from "lucide-react";
+import { Calendar, Brain, FileText, Video, Users, Clock, Bell } from "lucide-react";
 import MedicalHistoryModal from "@/components/modals/MedicalHistoryModal";
 import TelehealthModal from "@/components/modals/TelehealthModal";
 import AIAssistantModal from "@/components/modals/AIAssistantModal";
+import ScheduleAppointmentModal from "@/components/modals/ScheduleAppointmentModal";
+import PatientListModal from "@/components/modals/PatientListModal";
+import PendingRequestsModal from "@/components/modals/PendingRequestsModal";
 import { useToast } from "@/hooks/use-toast";
 
 const Doctor = () => {
@@ -14,6 +17,9 @@ const Doctor = () => {
   const [telehealthPatient, setTelehealthPatient] = useState({ name: "", time: "" });
   const [aiAction, setAiAction] = useState<"summarize" | "recommend">("summarize");
   const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [patientListOpen, setPatientListOpen] = useState(false);
+  const [pendingRequestsOpen, setPendingRequestsOpen] = useState(false);
   const { toast } = useToast();
 
   const handleViewHistory = (patientName: string) => {
@@ -67,10 +73,13 @@ const Doctor = () => {
             <p className="text-sm text-muted-foreground">Telehealth</p>
           </Card>
           
-          <Card className="p-6 border-primary/30">
-            <FileText className="w-8 h-8 text-primary mb-2" />
-            <div className="text-2xl font-bold">12</div>
-            <p className="text-sm text-muted-foreground">Pending Notes</p>
+          <Card 
+            className="p-6 border-accent/30 cursor-pointer hover:shadow-lg transition-all"
+            onClick={() => setPendingRequestsOpen(true)}
+          >
+            <Bell className="w-8 h-8 text-accent mb-2" />
+            <div className="text-2xl font-bold">3</div>
+            <p className="text-sm text-muted-foreground">Pending Requests</p>
           </Card>
         </div>
 
@@ -176,7 +185,7 @@ const Doctor = () => {
                 <Button 
                   variant="outline" 
                   className="w-full justify-start"
-                  onClick={() => toast({ title: "Scheduling", description: "Opening appointment scheduler" })}
+                  onClick={() => setScheduleOpen(true)}
                 >
                   <Calendar className="w-4 h-4 mr-2" />
                   Schedule Appointment
@@ -195,7 +204,7 @@ const Doctor = () => {
                 <Button 
                   variant="outline" 
                   className="w-full justify-start"
-                  onClick={() => toast({ title: "Patient List", description: "Opening patient management" })}
+                  onClick={() => setPatientListOpen(true)}
                 >
                   <Users className="w-4 h-4 mr-2" />
                   View Patient List
@@ -260,6 +269,22 @@ const Doctor = () => {
         onOpenChange={setAiModalOpen}
         patientName="John Smith"
         action={aiAction}
+      />
+      <ScheduleAppointmentModal
+        open={scheduleOpen}
+        onOpenChange={setScheduleOpen}
+      />
+      <PatientListModal
+        open={patientListOpen}
+        onOpenChange={setPatientListOpen}
+        onViewHistory={(patientName) => {
+          setSelectedPatient(patientName);
+          setHistoryOpen(true);
+        }}
+      />
+      <PendingRequestsModal
+        open={pendingRequestsOpen}
+        onOpenChange={setPendingRequestsOpen}
       />
     </div>
   );
