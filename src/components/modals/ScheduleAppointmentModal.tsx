@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar as CalendarIcon, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -33,6 +34,7 @@ const ScheduleAppointmentModal = ({ open, onOpenChange }: ScheduleAppointmentMod
   const [selectedTime, setSelectedTime] = useState("");
   const [appointmentType, setAppointmentType] = useState("");
   const [notes, setNotes] = useState("");
+  const [syncWithGoogle, setSyncWithGoogle] = useState(false);
   const { toast } = useToast();
 
   const handleSchedule = () => {
@@ -46,10 +48,32 @@ const ScheduleAppointmentModal = ({ open, onOpenChange }: ScheduleAppointmentMod
     }
 
     const patient = samplePatients.find(p => p.id === selectedPatient);
-    toast({
-      title: "Appointment Scheduled!",
-      description: `Appointment with ${patient?.name} scheduled for ${format(selectedDate, "MMM dd, yyyy")} at ${selectedTime}`,
-    });
+    
+    if (syncWithGoogle) {
+      // Create Google Calendar event URL
+      const startDateTime = new Date(selectedDate);
+      const [hours, minutes] = selectedTime.includes("PM") 
+        ? [parseInt(selectedTime.split(":")[0]) + (parseInt(selectedTime.split(":")[0]) === 12 ? 0 : 12), parseInt(selectedTime.split(":")[1])]
+        : [parseInt(selectedTime.split(":")[0]) === 12 ? 0 : parseInt(selectedTime.split(":")[0]), parseInt(selectedTime.split(":")[1])];
+      startDateTime.setHours(hours, minutes, 0);
+      
+      const endDateTime = new Date(startDateTime);
+      endDateTime.setHours(endDateTime.getHours() + 1);
+      
+      const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Appointment+with+${encodeURIComponent(patient?.name || "Patient")}&dates=${startDateTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endDateTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=Appointment+Type:+${encodeURIComponent(appointmentType)}${notes ? '%0A%0ANotes:+' + encodeURIComponent(notes) : ''}&location=Medical+Center`;
+      
+      window.open(googleCalendarUrl, '_blank');
+      
+      toast({
+        title: "Appointment Scheduled & Synced!",
+        description: `Appointment with ${patient?.name} scheduled for ${format(selectedDate, "MMM dd, yyyy")} at ${selectedTime}. Google Calendar opened.`,
+      });
+    } else {
+      toast({
+        title: "Appointment Scheduled!",
+        description: `Appointment with ${patient?.name} scheduled for ${format(selectedDate, "MMM dd, yyyy")} at ${selectedTime}`,
+      });
+    }
 
     // Reset form
     setSelectedPatient("");
@@ -57,6 +81,7 @@ const ScheduleAppointmentModal = ({ open, onOpenChange }: ScheduleAppointmentMod
     setSelectedTime("");
     setAppointmentType("");
     setNotes("");
+    setSyncWithGoogle(false);
     onOpenChange(false);
   };
 
@@ -145,6 +170,20 @@ const ScheduleAppointmentModal = ({ open, onOpenChange }: ScheduleAppointmentMod
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
             />
+          </div>
+
+          <div className="flex items-center space-x-2 p-4 bg-muted/50 rounded-lg">
+            <Checkbox
+              id="googleSync"
+              checked={syncWithGoogle}
+              onCheckedChange={(checked) => setSyncWithGoogle(checked as boolean)}
+            />
+            <Label
+              htmlFor="googleSync"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              Sync with Google Calendar
+            </Label>
           </div>
 
           <div className="flex gap-2 pt-4">

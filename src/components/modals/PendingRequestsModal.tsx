@@ -46,9 +46,23 @@ const PendingRequestsModal = ({ open, onOpenChange }: PendingRequestsModalProps)
   const { toast } = useToast();
 
   const handleApprove = (patientName: string, date: string, time: string) => {
+    // Create Google Calendar event URL
+    const startDateTime = new Date(date);
+    const [hours, minutes] = time.includes("PM") 
+      ? [parseInt(time.split(":")[0]) + (parseInt(time.split(":")[0]) === 12 ? 0 : 12), parseInt(time.split(":")[1])]
+      : [parseInt(time.split(":")[0]) === 12 ? 0 : parseInt(time.split(":")[0]), parseInt(time.split(":")[1])];
+    startDateTime.setHours(hours, minutes, 0);
+    
+    const endDateTime = new Date(startDateTime);
+    endDateTime.setHours(endDateTime.getHours() + 1);
+    
+    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Appointment+with+${encodeURIComponent(patientName)}&dates=${startDateTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endDateTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=Patient+appointment+approved+through+HealthCare+AI&location=Medical+Center`;
+    
+    window.open(googleCalendarUrl, '_blank');
+    
     toast({
-      title: "Appointment Approved",
-      description: `${patientName}'s appointment for ${date} at ${time} has been confirmed.`,
+      title: "Appointment Approved & Synced",
+      description: `${patientName}'s appointment for ${date} at ${time} has been confirmed. Google Calendar opened.`,
     });
   };
 

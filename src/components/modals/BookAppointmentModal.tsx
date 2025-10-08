@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar as CalendarIcon, Brain } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -29,6 +30,7 @@ const BookAppointmentModal = ({ open, onOpenChange, preSelectedDoctor, preSelect
   const [selectedDoctor, setSelectedDoctor] = useState(preSelectedDoctor || "");
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState("");
+  const [syncWithGoogle, setSyncWithGoogle] = useState(false);
   const { toast } = useToast();
 
   // Update selected doctor when pre-selected doctor changes
@@ -48,16 +50,40 @@ const BookAppointmentModal = ({ open, onOpenChange, preSelectedDoctor, preSelect
       return;
     }
 
-    toast({
-      title: "Appointment Booked!",
-      description: `Your appointment has been scheduled for ${format(selectedDate, "MMM dd, yyyy")} at ${selectedTime}`,
-    });
+    const doctor = doctors.find(d => d.id === selectedDoctor);
+    
+    if (syncWithGoogle) {
+      // Create Google Calendar event URL
+      const startDateTime = new Date(selectedDate);
+      const [hours, minutes] = selectedTime.includes("PM") 
+        ? [parseInt(selectedTime.split(":")[0]) + 12, parseInt(selectedTime.split(":")[1])]
+        : [parseInt(selectedTime.split(":")[0]), parseInt(selectedTime.split(":")[1])];
+      startDateTime.setHours(hours, minutes, 0);
+      
+      const endDateTime = new Date(startDateTime);
+      endDateTime.setHours(endDateTime.getHours() + 1);
+      
+      const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Medical+Appointment+with+${encodeURIComponent(doctor?.name || "Doctor")}&dates=${startDateTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endDateTime.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=Healthcare+appointment+scheduled+through+HealthCare+AI&location=Medical+Center`;
+      
+      window.open(googleCalendarUrl, '_blank');
+      
+      toast({
+        title: "Appointment Booked & Synced!",
+        description: `Your appointment has been scheduled for ${format(selectedDate, "MMM dd, yyyy")} at ${selectedTime}. Google Calendar opened in new tab.`,
+      });
+    } else {
+      toast({
+        title: "Appointment Booked!",
+        description: `Your appointment has been scheduled for ${format(selectedDate, "MMM dd, yyyy")} at ${selectedTime}`,
+      });
+    }
     
     onOpenChange(false);
     // Reset form
     setSelectedDoctor("");
     setSelectedDate(undefined);
     setSelectedTime("");
+    setSyncWithGoogle(false);
   };
 
   return (
@@ -128,6 +154,20 @@ const BookAppointmentModal = ({ open, onOpenChange, preSelectedDoctor, preSelect
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="flex items-center space-x-2 p-4 bg-muted/50 rounded-lg">
+            <Checkbox
+              id="googleSync"
+              checked={syncWithGoogle}
+              onCheckedChange={(checked) => setSyncWithGoogle(checked as boolean)}
+            />
+            <Label
+              htmlFor="googleSync"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              Sync with Google Calendar
+            </Label>
           </div>
 
           <div className="flex gap-2">
