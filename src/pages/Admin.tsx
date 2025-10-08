@@ -1,8 +1,25 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Settings, Users, BarChart3, Database, Shield, Activity } from "lucide-react";
+import EditUserModal from "@/components/modals/EditUserModal";
+import { useToast } from "@/hooks/use-toast";
 
 const Admin = () => {
+  const [editUserOpen, setEditUserOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const { toast } = useToast();
+
+  const handleEditUser = (user: any) => {
+    setSelectedUser(user);
+    setEditUserOpen(true);
+  };
+
+  const handleAddUser = () => {
+    setSelectedUser(null);
+    setEditUserOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -58,7 +75,7 @@ const Admin = () => {
                   <Users className="w-5 h-5 text-primary" />
                   User Management
                 </h2>
-                <Button size="sm">Add New User</Button>
+                <Button size="sm" onClick={handleAddUser}>Add New User</Button>
               </div>
               <div className="space-y-3">
                 <div className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
@@ -69,7 +86,13 @@ const Admin = () => {
                     </div>
                     <div className="flex gap-2">
                       <span className="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded">Active</span>
-                      <Button size="sm" variant="outline">Edit</Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleEditUser({ name: "Dr. Sarah Johnson", role: "Doctor", specialty: "Cardiology", status: "Active" })}
+                      >
+                        Edit
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -82,7 +105,13 @@ const Admin = () => {
                     </div>
                     <div className="flex gap-2">
                       <span className="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded">Active</span>
-                      <Button size="sm" variant="outline">Edit</Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleEditUser({ name: "John Smith", role: "Patient", status: "Active" })}
+                      >
+                        Edit
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -95,7 +124,13 @@ const Admin = () => {
                     </div>
                     <div className="flex gap-2">
                       <span className="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded">Active</span>
-                      <Button size="sm" variant="outline">Edit</Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleEditUser({ name: "Emily Davis", role: "Admin", status: "Active" })}
+                      >
+                        Edit
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -148,15 +183,27 @@ const Admin = () => {
                 Quick Settings
               </h2>
               <div className="space-y-2">
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => toast({ title: "Database Management", description: "Opening database configuration panel" })}
+                >
                   <Database className="w-4 h-4 mr-2" />
                   Database Management
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => toast({ title: "Security Settings", description: "Opening security configuration" })}
+                >
                   <Shield className="w-4 h-4 mr-2" />
                   Security Settings
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => toast({ title: "Analytics", description: "Loading analytics dashboard" })}
+                >
                   <BarChart3 className="w-4 h-4 mr-2" />
                   Analytics Dashboard
                 </Button>
@@ -214,6 +261,12 @@ const Admin = () => {
           </div>
         </div>
       </div>
+
+      <EditUserModal
+        open={editUserOpen}
+        onOpenChange={setEditUserOpen}
+        user={selectedUser}
+      />
     </div>
   );
 };

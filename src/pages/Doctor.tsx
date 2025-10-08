@@ -1,8 +1,38 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Calendar, Brain, FileText, Video, Users, Clock } from "lucide-react";
+import MedicalHistoryModal from "@/components/modals/MedicalHistoryModal";
+import TelehealthModal from "@/components/modals/TelehealthModal";
+import AIAssistantModal from "@/components/modals/AIAssistantModal";
+import { useToast } from "@/hooks/use-toast";
 
 const Doctor = () => {
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState("");
+  const [telehealthOpen, setTelehealthOpen] = useState(false);
+  const [telehealthPatient, setTelehealthPatient] = useState({ name: "", time: "" });
+  const [aiAction, setAiAction] = useState<"summarize" | "recommend">("summarize");
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleViewHistory = (patientName: string) => {
+    setSelectedPatient(patientName);
+    setHistoryOpen(true);
+  };
+
+  const handleJoinCall = (patientName: string, time: string) => {
+    setTelehealthPatient({ name: patientName, time });
+    setTelehealthOpen(true);
+  };
+
+  const handleStartConsultation = (patientName: string) => {
+    toast({
+      title: "Starting Consultation",
+      description: `Opening consultation room for ${patientName}`,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -65,7 +95,9 @@ const Doctor = () => {
                     </div>
                     <span className="text-sm bg-primary/20 text-primary px-3 py-1 rounded-full">9:00 AM</span>
                   </div>
-                  <Button size="sm" className="mt-2">Start Consultation</Button>
+                  <Button size="sm" className="mt-2" onClick={() => handleStartConsultation("John Smith")}>
+                    Start Consultation
+                  </Button>
                 </div>
                 
                 <div className="p-4 border-l-4 border-secondary bg-secondary/5 rounded">
@@ -76,7 +108,9 @@ const Doctor = () => {
                     </div>
                     <span className="text-sm bg-secondary/20 text-secondary px-3 py-1 rounded-full">10:30 AM</span>
                   </div>
-                  <Button size="sm" variant="outline" className="mt-2">View History</Button>
+                  <Button size="sm" variant="outline" className="mt-2" onClick={() => handleViewHistory("Emily Davis")}>
+                    View History
+                  </Button>
                 </div>
 
                 <div className="p-4 border-l-4 border-accent bg-accent/5 rounded">
@@ -87,7 +121,9 @@ const Doctor = () => {
                     </div>
                     <span className="text-sm bg-accent/20 text-accent px-3 py-1 rounded-full">2:00 PM</span>
                   </div>
-                  <Button size="sm" variant="outline" className="mt-2">Join Video Call</Button>
+                  <Button size="sm" variant="outline" className="mt-2" onClick={() => handleJoinCall("Michael Brown", "2:00 PM")}>
+                    Join Video Call
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -107,8 +143,25 @@ const Doctor = () => {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm">Generate Notes</Button>
-                  <Button size="sm" variant="outline">Procedure Recommendations</Button>
+                  <Button 
+                    size="sm" 
+                    onClick={() => {
+                      setAiAction("summarize");
+                      setAiModalOpen(true);
+                    }}
+                  >
+                    Generate Notes
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => {
+                      setAiAction("recommend");
+                      setAiModalOpen(true);
+                    }}
+                  >
+                    Procedure Recommendations
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -120,15 +173,30 @@ const Doctor = () => {
             <Card className="p-6">
               <h2 className="font-bold mb-4">Quick Actions</h2>
               <div className="space-y-2">
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => toast({ title: "Scheduling", description: "Opening appointment scheduler" })}
+                >
                   <Calendar className="w-4 h-4 mr-2" />
                   Schedule Appointment
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => {
+                    setAiAction("summarize");
+                    setAiModalOpen(true);
+                  }}
+                >
                   <FileText className="w-4 h-4 mr-2" />
                   Create Note
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => toast({ title: "Patient List", description: "Opening patient management" })}
+                >
                   <Users className="w-4 h-4 mr-2" />
                   View Patient List
                 </Button>
@@ -160,13 +228,39 @@ const Doctor = () => {
               <p className="text-sm text-muted-foreground mb-3">
                 Last synced: 5 minutes ago
               </p>
-              <Button size="sm" variant="outline" className="w-full">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="w-full"
+                onClick={() => toast({ 
+                  title: "Syncing Calendar", 
+                  description: "Google Calendar sync in progress..." 
+                })}
+              >
                 Sync Now
               </Button>
             </Card>
           </div>
         </div>
       </div>
+
+      <MedicalHistoryModal 
+        open={historyOpen} 
+        onOpenChange={setHistoryOpen}
+        patientName={selectedPatient}
+      />
+      <TelehealthModal 
+        open={telehealthOpen} 
+        onOpenChange={setTelehealthOpen}
+        patientName={telehealthPatient.name}
+        appointmentTime={telehealthPatient.time}
+      />
+      <AIAssistantModal
+        open={aiModalOpen}
+        onOpenChange={setAiModalOpen}
+        patientName="John Smith"
+        action={aiAction}
+      />
     </div>
   );
 };

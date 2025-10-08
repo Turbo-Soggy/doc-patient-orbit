@@ -1,8 +1,20 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Brain, Calendar, FileText, Video, Clock, Activity } from "lucide-react";
+import SymptomCheckModal from "@/components/modals/SymptomCheckModal";
+import BookAppointmentModal from "@/components/modals/BookAppointmentModal";
+import MedicalHistoryModal from "@/components/modals/MedicalHistoryModal";
+import TelehealthModal from "@/components/modals/TelehealthModal";
+import { useToast } from "@/hooks/use-toast";
 
 const Patient = () => {
+  const [symptomCheckOpen, setSymptomCheckOpen] = useState(false);
+  const [bookAppointmentOpen, setBookAppointmentOpen] = useState(false);
+  const [medicalHistoryOpen, setMedicalHistoryOpen] = useState(false);
+  const [telehealthOpen, setTelehealthOpen] = useState(false);
+  const { toast } = useToast();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -19,25 +31,37 @@ const Patient = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Quick Actions */}
         <div className="grid md:grid-cols-4 gap-4 mb-8">
-          <Card className="p-6 hover:shadow-lg transition-all cursor-pointer border-primary/30">
+          <Card 
+            className="p-6 hover:shadow-lg transition-all cursor-pointer border-primary/30"
+            onClick={() => setSymptomCheckOpen(true)}
+          >
             <Brain className="w-8 h-8 text-primary mb-3" />
             <h3 className="font-semibold mb-1">AI Symptom Check</h3>
             <p className="text-sm text-muted-foreground">Analyze symptoms</p>
           </Card>
           
-          <Card className="p-6 hover:shadow-lg transition-all cursor-pointer border-secondary/30">
+          <Card 
+            className="p-6 hover:shadow-lg transition-all cursor-pointer border-secondary/30"
+            onClick={() => setBookAppointmentOpen(true)}
+          >
             <Calendar className="w-8 h-8 text-secondary mb-3" />
             <h3 className="font-semibold mb-1">Book Appointment</h3>
             <p className="text-sm text-muted-foreground">Schedule visit</p>
           </Card>
           
-          <Card className="p-6 hover:shadow-lg transition-all cursor-pointer border-accent/30">
+          <Card 
+            className="p-6 hover:shadow-lg transition-all cursor-pointer border-accent/30"
+            onClick={() => setMedicalHistoryOpen(true)}
+          >
             <FileText className="w-8 h-8 text-accent mb-3" />
             <h3 className="font-semibold mb-1">Medical History</h3>
             <p className="text-sm text-muted-foreground">View records</p>
           </Card>
           
-          <Card className="p-6 hover:shadow-lg transition-all cursor-pointer border-primary/30">
+          <Card 
+            className="p-6 hover:shadow-lg transition-all cursor-pointer border-primary/30"
+            onClick={() => setTelehealthOpen(true)}
+          >
             <Video className="w-8 h-8 text-primary mb-3" />
             <h3 className="font-semibold mb-1">Telehealth</h3>
             <p className="text-sm text-muted-foreground">Start consultation</p>
@@ -141,13 +165,25 @@ const Patient = () => {
             <Card className="p-6">
               <h2 className="font-bold mb-4">Quick Actions</h2>
               <div className="space-y-2">
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => toast({ title: "Request Sent", description: "Your prescription refill request has been submitted." })}
+                >
                   Request Prescription Refill
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => toast({ title: "Messaging", description: "Opening secure messaging with your doctor." })}
+                >
                   Message Your Doctor
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => setMedicalHistoryOpen(true)}
+                >
                   Download Records
                 </Button>
               </div>
@@ -155,6 +191,11 @@ const Patient = () => {
           </div>
         </div>
       </div>
+
+      <SymptomCheckModal open={symptomCheckOpen} onOpenChange={setSymptomCheckOpen} />
+      <BookAppointmentModal open={bookAppointmentOpen} onOpenChange={setBookAppointmentOpen} />
+      <MedicalHistoryModal open={medicalHistoryOpen} onOpenChange={setMedicalHistoryOpen} />
+      <TelehealthModal open={telehealthOpen} onOpenChange={setTelehealthOpen} />
     </div>
   );
 };
